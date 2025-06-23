@@ -100,10 +100,10 @@ export default function AdminDashboard() {
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3">
         <div className="max-w-7xl mx-auto flex justify-between items-center text-sm text-gray-600">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span>Connected</span>
-            </div>
+            </div> */}
             <span>Last updated: {lastUpdated || '--:--:--'}</span>
           </div>
           <div className="text-xs text-gray-500">
