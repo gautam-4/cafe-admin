@@ -16,21 +16,33 @@ import {
   Clock,
   Phone,
   IndianRupee,
-  ChevronDown
+  ChevronDown,
+  CalendarRange
 } from 'lucide-react';
 
 const SalesTab = () => {
-  const { sales, loading, error, getSalesAnalytics } = useSales();
+  const { sales, loading, error, getSalesAnalytics, getAvailableYears } = useSales();
   const [selectedPeriod, setSelectedPeriod] = useState('today');
   const [selectedChartType, setSelectedChartType] = useState('category');
+  const [showCustomRange, setShowCustomRange] = useState(false);
+  const [customRange, setCustomRange] = useState({
+    startMonth: new Date().getMonth(),
+    startYear: new Date().getFullYear(),
+    endMonth: new Date().getMonth(),
+    endYear: new Date().getFullYear()
+  });
 
-  const analytics = getSalesAnalytics(selectedPeriod);
+  const analytics = getSalesAnalytics(
+    selectedPeriod === 'custom' ? 'custom' : selectedPeriod,
+    selectedPeriod === 'custom' ? customRange : null
+  );
 
   const periods = [
     { key: 'today', label: 'Today' },
     { key: 'week', label: 'Week' },
     { key: 'month', label: 'Month' },
-    { key: 'year', label: 'Year'}
+    { key: 'year', label: 'Year'},
+    { key: 'custom', label: 'Custom Range' }
   ];
 
   const chartTypes = [
@@ -38,6 +50,43 @@ const SalesTab = () => {
     { key: 'vegNonVeg', label: 'Veg vs Non-Veg' },
     { key: 'priceRange', label: 'Order Count by Price Range' }
   ];
+
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const availableYears = getAvailableYears();
+
+  const handlePeriodChange = (period) => {
+    setSelectedPeriod(period);
+    if (period === 'custom') {
+      setShowCustomRange(true);
+    } else {
+      setShowCustomRange(false);
+    }
+  };
+
+  const handleCustomRangeChange = (field, value) => {
+    setCustomRange(prev => ({
+      ...prev,
+      [field]: parseInt(value)
+    }));
+  };
+
+  const getCustomRangeLabel = () => {
+    const { startMonth, startYear, endMonth, endYear } = customRange;
+    const startMonthName = months[startMonth];
+    const endMonthName = months[endMonth];
+    
+    if (startYear === endYear && startMonth === endMonth) {
+      return `${startMonthName} ${startYear}`;
+    } else if (startYear === endYear) {
+      return `${startMonthName} - ${endMonthName} ${startYear}`;
+    } else {
+      return `${startMonthName} ${startYear} - ${endMonthName} ${endYear}`;
+    }
+  };
 
   // Function to get pie chart data based on selected type
   const getPieChartData = () => {
@@ -212,19 +261,90 @@ const SalesTab = () => {
           {periods.map((period) => (
             <button
               key={period.key}
-              onClick={() => setSelectedPeriod(period.key)}
+              onClick={() => handlePeriodChange(period.key)}
               className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedPeriod === period.key
                   ? 'bg-blue-500 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              <Calendar className="w-4 h-4 inline mr-1 sm:mr-2" />
+              {period.key === 'custom' ? (
+                <CalendarRange className="w-4 h-4 inline mr-1 sm:mr-2" />
+              ) : (
+                <Calendar className="w-4 h-4 inline mr-1 sm:mr-2" />
+              )}
               <span className="hidden sm:inline">{period.label}</span>
               <span className="sm:hidden">{period.label.split(' ')[0]}</span>
             </button>
           ))}
         </div>
+
+        {/* Custom Date Range Selector */}
+        {showCustomRange && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
+            <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
+              <CalendarRange className="w-4 h-4" />
+              Select Date Range
+            </h4>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Start Date */}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-2">From</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <select
+                    value={customRange.startMonth}
+                    onChange={(e) => handleCustomRangeChange('startMonth', e.target.value)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm text-black focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {months.map((month, index) => (
+                      <option key={index} value={index}>{month}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={customRange.startYear}
+                    onChange={(e) => handleCustomRangeChange('startYear', e.target.value)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm text-black focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {availableYears.map((year) => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* End Date */}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-2">To</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <select
+                    value={customRange.endMonth}
+                    onChange={(e) => handleCustomRangeChange('endMonth', e.target.value)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm text-black focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {months.map((month, index) => (
+                      <option key={index} value={index}>{month}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={customRange.endYear}
+                    onChange={(e) => handleCustomRangeChange('endYear', e.target.value)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm text-black focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {availableYears.map((year) => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Selected Range Display */}
+            <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700">
+              <strong>Selected Range:</strong> {getCustomRangeLabel()}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Analytics Cards */}
