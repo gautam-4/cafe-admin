@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 export const useSales = () => {
@@ -10,11 +10,10 @@ export const useSales = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Query for orders with paymentStatus 'paid' instead of status 'paid'
+        // Simpler query - just filter by paymentStatus, sort in memory
         const salesQuery = query(
             collection(db, 'orders'),
-            where('paymentStatus', '==', 'paid'),
-            orderBy('updatedAt', 'desc')
+            where('paymentStatus', '==', 'paid')
         );
 
         const unsubscribe = onSnapshot(
@@ -24,18 +23,20 @@ export const useSales = () => {
                     id: doc.id,
                     ...doc.data()
                 }));
+                
+                // Sort in memory by updatedAt descending
+                salesData.sort((a, b) => {
+                    const aTime = a.updatedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
+                    const bTime = b.updatedAt?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
+                    return bTime - aTime;
+                });
+                
                 setSales(salesData);
                 setLoading(false);
             },
             (err) => {
                 console.error('Error fetching sales:', err);
-
-                // Handle specific Firestore errors
-                if (err.code === 'failed-precondition' && err.message.includes('index')) {
-                    setError('Database index required. Please create a composite index for orders collection with fields: paymentStatus (Ascending), updatedAt (Descending)');
-                } else {
-                    setError(err.message);
-                }
+                setError(err.message);
                 setLoading(false);
             }
         );
@@ -48,10 +49,8 @@ export const useSales = () => {
         let startDate, endDate;
 
         if (period === 'custom' && customRange) {
-            // Handle custom date range
             const { startMonth, startYear, endMonth, endYear } = customRange;
             startDate = new Date(startYear, startMonth, 1);
-            // End date is the first day of the next month after endMonth
             endDate = new Date(endYear, endMonth + 1, 1);
             return { startDate, endDate };
         }
@@ -95,7 +94,6 @@ export const useSales = () => {
         const { startDate, endDate } = getDateRange(period, customRange);
 
         const filteredSales = sales.filter(sale => {
-            // Handle both Firebase Timestamp and regular Date objects
             let saleDate;
             if (sale.updatedAt && sale.updatedAt.toDate) {
                 saleDate = sale.updatedAt.toDate();
@@ -114,17 +112,14 @@ export const useSales = () => {
         const totalOrders = filteredSales.length;
         const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
-        // Category breakdown
         const categoryBreakdown = {};
         filteredSales.forEach(sale => {
             if (sale.summary && sale.summary.categories) {
                 sale.summary.categories.forEach(category => {
-                    // Distribute the total price equally among categories for this sale
                     const pricePerCategory = sale.totalPrice / sale.summary.categories.length;
                     categoryBreakdown[category] = (categoryBreakdown[category] || 0) + pricePerCategory;
                 });
             } else if (sale.items && sale.items.length > 0) {
-                // Fallback: use item categories if summary not available
                 sale.items.forEach(item => {
                     const category = item.category || 'unknown';
                     categoryBreakdown[category] = (categoryBreakdown[category] || 0) + (item.itemTotal || 0);
@@ -142,13 +137,10 @@ export const useSales = () => {
         };
     };
 
-    // Helper function to get available years for dropdown
     const getAvailableYears = () => {
         const currentYear = new Date().getFullYear();
-        const years = [];
-        
-        // Get years from existing sales data
         const salesYears = new Set();
+        
         sales.forEach(sale => {
             let saleDate;
             if (sale.updatedAt && sale.updatedAt.toDate) {
@@ -164,15 +156,13 @@ export const useSales = () => {
             }
         });
 
-        // Include current year and years from sales data
         const allYears = new Set([currentYear, ...salesYears]);
         
-        // Add a few years before and after for flexibility
         for (let year = currentYear - 2; year <= currentYear + 1; year++) {
             allYears.add(year);
         }
 
-        return Array.from(allYears).sort((a, b) => b - a); // Sort descending
+        return Array.from(allYears).sort((a, b) => b - a);
     };
 
     return { 
