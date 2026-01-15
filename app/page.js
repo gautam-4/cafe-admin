@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import OrdersTab from '@/components/OrdersTab';
 import SalesTab from '@/components/SalesTab';
-import { ChefHat, BarChart3, Bell, Settings } from 'lucide-react';
+import MenuTab from '@/components/MenuTab';
+import { ChefHat, BarChart3, Bell, Settings , UtensilsCrossed} from 'lucide-react';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('orders');
@@ -14,10 +15,10 @@ export default function AdminDashboard() {
     const updateTime = () => {
       setLastUpdated(new Date().toLocaleTimeString());
     };
-    
+
     updateTime();
     const interval = setInterval(updateTime, 30000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -27,6 +28,12 @@ export default function AdminDashboard() {
       label: 'Orders',
       icon: ChefHat,
       component: OrdersTab
+    },
+    {
+      id: 'menu',
+      label: 'Menu',
+      icon: UtensilsCrossed,
+      component: MenuTab
     },
     {
       id: 'sales',
@@ -53,7 +60,7 @@ export default function AdminDashboard() {
                 <p className="text-sm text-gray-600">Management Dashboard</p>
               </div>
             </div>
-            
+
             {/* <div className="flex items-center gap-3">
               <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
                 <Bell className="w-5 h-5" />
@@ -76,11 +83,10 @@ export default function AdminDashboard() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                    activeTab === tab.id
+                  className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === tab.id
                       ? 'border-orange-500 text-orange-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   <Icon className="w-5 h-5" />
                   {tab.label}
@@ -107,7 +113,7 @@ export default function AdminDashboard() {
             <span>Last updated: {lastUpdated || '--:--:--'}</span>
           </div>
           <div className="text-xs text-gray-500">
-            Cafe Admin Dashboard v1.0
+            Cafe Admin Dashboard v2.0
           </div>
         </div>
       </div>
