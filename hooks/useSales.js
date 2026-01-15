@@ -23,14 +23,14 @@ export const useSales = () => {
                     id: doc.id,
                     ...doc.data()
                 }));
-                
+
                 // Sort in memory by updatedAt descending
                 salesData.sort((a, b) => {
                     const aTime = a.updatedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
                     const bTime = b.updatedAt?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
                     return bTime - aTime;
                 });
-                
+
                 setSales(salesData);
                 setLoading(false);
             },
@@ -47,6 +47,13 @@ export const useSales = () => {
     const getDateRange = (period, customRange = null) => {
         const now = new Date();
         let startDate, endDate;
+
+        if (period === 'all') {
+            return {
+                startDate: new Date(2020, 0, 1), 
+                endDate: now
+            };
+        }
 
         if (period === 'custom' && customRange) {
             const { startMonth, startYear, endMonth, endYear } = customRange;
@@ -140,7 +147,7 @@ export const useSales = () => {
     const getAvailableYears = () => {
         const currentYear = new Date().getFullYear();
         const salesYears = new Set();
-        
+
         sales.forEach(sale => {
             let saleDate;
             if (sale.updatedAt && sale.updatedAt.toDate) {
@@ -150,14 +157,14 @@ export const useSales = () => {
             } else if (sale.timestamp) {
                 saleDate = new Date(sale.timestamp);
             }
-            
+
             if (saleDate) {
                 salesYears.add(saleDate.getFullYear());
             }
         });
 
         const allYears = new Set([currentYear, ...salesYears]);
-        
+
         for (let year = currentYear - 2; year <= currentYear + 1; year++) {
             allYears.add(year);
         }
@@ -165,11 +172,11 @@ export const useSales = () => {
         return Array.from(allYears).sort((a, b) => b - a);
     };
 
-    return { 
-        sales, 
-        loading, 
-        error, 
-        getSalesAnalytics, 
-        getAvailableYears 
+    return {
+        sales,
+        loading,
+        error,
+        getSalesAnalytics,
+        getAvailableYears
     };
 };

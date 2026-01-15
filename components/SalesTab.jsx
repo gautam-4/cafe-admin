@@ -42,6 +42,7 @@ const SalesTab = () => {
     { key: 'week', label: 'Week' },
     { key: 'month', label: 'Month' },
     { key: 'year', label: 'Year'},
+    { key: 'all', label: 'All Time' },
     { key: 'custom', label: 'Custom Range' }
   ];
 
