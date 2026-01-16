@@ -1,11 +1,13 @@
-import { Calendar } from 'lucide-react';
+import { Calendar, CalendarRange } from 'lucide-react';
 
 const PeriodSelector = ({ selectedPeriod, onPeriodChange }) => {
   const periods = [
     { key: 'today', label: 'Today' },
     { key: 'week', label: 'Week' },
     { key: 'month', label: 'Month' },
-    { key: 'year', label: 'Year'}
+    { key: 'year', label: 'Year'},
+    { key: 'all', label: 'All Time' },
+    { key: 'custom', label: 'Custom Range' }
   ];
 
   return (
@@ -21,7 +23,11 @@ const PeriodSelector = ({ selectedPeriod, onPeriodChange }) => {
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            <Calendar className="w-4 h-4 inline mr-1 sm:mr-2" />
+            {period.key === 'custom' ? (
+              <CalendarRange className="w-4 h-4 inline mr-1 sm:mr-2" />
+            ) : (
+              <Calendar className="w-4 h-4 inline mr-1 sm:mr-2" />
+            )}
             <span className="hidden sm:inline">{period.label}</span>
             <span className="sm:hidden">{period.label.split(' ')[0]}</span>
           </button>

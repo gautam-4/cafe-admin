@@ -10,7 +10,6 @@ export const useSales = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Simpler query - just filter by paymentStatus, sort in memory
         const salesQuery = query(
             collection(db, 'orders'),
             where('paymentStatus', '==', 'paid')
@@ -119,18 +118,61 @@ export const useSales = () => {
         const totalOrders = filteredSales.length;
         const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
+        // Category breakdown
         const categoryBreakdown = {};
         filteredSales.forEach(sale => {
             if (sale.summary && sale.summary.categories) {
                 sale.summary.categories.forEach(category => {
+                    const normalizedCategory = category.toLowerCase();
                     const pricePerCategory = sale.totalPrice / sale.summary.categories.length;
-                    categoryBreakdown[category] = (categoryBreakdown[category] || 0) + pricePerCategory;
+                    categoryBreakdown[normalizedCategory] = (categoryBreakdown[normalizedCategory] || 0) + pricePerCategory;
                 });
             } else if (sale.items && sale.items.length > 0) {
                 sale.items.forEach(item => {
-                    const category = item.category || 'unknown';
+                    const category = (item.category || 'unknown').toLowerCase();
                     categoryBreakdown[category] = (categoryBreakdown[category] || 0) + (item.itemTotal || 0);
                 });
+            }
+        });
+
+        // Hourly breakdown
+        const hourlyBreakdown = {};
+        filteredSales.forEach(sale => {
+            let saleDate;
+            if (sale.updatedAt && sale.updatedAt.toDate) {
+                saleDate = sale.updatedAt.toDate();
+            } else if (sale.createdAt && sale.createdAt.toDate) {
+                saleDate = sale.createdAt.toDate();
+            }
+            
+            if (saleDate) {
+                const hour = saleDate.getHours();
+                if (!hourlyBreakdown[hour]) {
+                    hourlyBreakdown[hour] = { revenue: 0, orders: 0 };
+                }
+                hourlyBreakdown[hour].revenue += sale.totalPrice || 0;
+                hourlyBreakdown[hour].orders += 1;
+            }
+        });
+
+        // Day of week breakdown
+        const dayBreakdown = {};
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        filteredSales.forEach(sale => {
+            let saleDate;
+            if (sale.updatedAt && sale.updatedAt.toDate) {
+                saleDate = sale.updatedAt.toDate();
+            } else if (sale.createdAt && sale.createdAt.toDate) {
+                saleDate = sale.createdAt.toDate();
+            }
+            
+            if (saleDate) {
+                const day = days[saleDate.getDay()];
+                if (!dayBreakdown[day]) {
+                    dayBreakdown[day] = { revenue: 0, orders: 0 };
+                }
+                dayBreakdown[day].revenue += sale.totalPrice || 0;
+                dayBreakdown[day].orders += 1;
             }
         });
 
@@ -139,6 +181,8 @@ export const useSales = () => {
             totalOrders,
             avgOrderValue,
             categoryBreakdown,
+            hourlyBreakdown,
+            dayBreakdown,
             sales: filteredSales,
             dateRange: { startDate, endDate }
         };
