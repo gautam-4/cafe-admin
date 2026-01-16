@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import TopSellingItems from '@/components/sales/TopSellingItems';
 
 export const useSales = () => {
     const [sales, setSales] = useState([]);
@@ -49,7 +50,7 @@ export const useSales = () => {
 
         if (period === 'all') {
             return {
-                startDate: new Date(2020, 0, 1), 
+                startDate: new Date(2020, 0, 1),
                 endDate: now
             };
         }
@@ -144,7 +145,7 @@ export const useSales = () => {
             } else if (sale.createdAt && sale.createdAt.toDate) {
                 saleDate = sale.createdAt.toDate();
             }
-            
+
             if (saleDate) {
                 const hour = saleDate.getHours();
                 if (!hourlyBreakdown[hour]) {
@@ -165,7 +166,7 @@ export const useSales = () => {
             } else if (sale.createdAt && sale.createdAt.toDate) {
                 saleDate = sale.createdAt.toDate();
             }
-            
+
             if (saleDate) {
                 const day = days[saleDate.getDay()];
                 if (!dayBreakdown[day]) {
@@ -216,11 +217,33 @@ export const useSales = () => {
         return Array.from(allYears).sort((a, b) => b - a);
     };
 
+    const getTopSellingItems = (period, limit = 5) => {
+        const { sales } = getSalesAnalytics(period);
+
+        const itemMap = {};
+
+        sales.forEach(sale => {
+            sale.items?.forEach(item => {
+                if (!itemMap[item.name]) {
+                    itemMap[item.name] = { name: item.name, qty: 0, revenue: 0 };
+                }
+                itemMap[item.name].qty += item.quantity || 1;
+                itemMap[item.name].revenue += item.itemTotal || 0;
+            });
+        });
+
+        return Object.values(itemMap)
+            .sort((a, b) => b.revenue - a.revenue)
+            .slice(0, limit);
+    };
+
+
     return {
         sales,
         loading,
         error,
         getSalesAnalytics,
-        getAvailableYears
+        getAvailableYears,
+        getTopSellingItems,
     };
 };

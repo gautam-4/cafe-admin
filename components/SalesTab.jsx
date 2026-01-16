@@ -12,9 +12,10 @@ import SalesAnalyticsCards from './sales/SalesAnalyticsCards';
 import CategoryPerformanceChart from './sales/CategoryPerformanceChart';
 import RecentSalesList from './sales/RecentSalesList';
 import SalesInsights from './sales/SalesInsights';
+import TopSellingItems from './sales/TopSellingItems';
 
 const SalesTab = () => {
-  const { sales, loading, error, getSalesAnalytics, getAvailableYears } = useSales();
+  const { sales, loading, error, getSalesAnalytics, getAvailableYears, getTopSellingItems } = useSales();
   const [selectedPeriod, setSelectedPeriod] = useState('today');
   const [selectedChartType, setSelectedChartType] = useState('category');
   const [showCustomRange, setShowCustomRange] = useState(false);
@@ -24,6 +25,8 @@ const SalesTab = () => {
     endMonth: new Date().getMonth(),
     endYear: new Date().getFullYear()
   });
+
+  const topItems = getTopSellingItems(selectedPeriod);
 
   const analytics = getSalesAnalytics(
     selectedPeriod === 'custom' ? 'custom' : selectedPeriod,
@@ -171,6 +174,8 @@ const SalesTab = () => {
         selectedChartType={selectedChartType}
         onChartTypeChange={setSelectedChartType}
       />
+
+      <TopSellingItems items={topItems} />
 
       {/* Business Insights */}
       <SalesInsights analytics={analytics} selectedPeriod={selectedPeriod} />
