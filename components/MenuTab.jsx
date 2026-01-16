@@ -324,7 +324,7 @@ export default function MenuTab() {
                     </div>
 
                     {selectedCategory === categoryId && (
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1 opacity-90">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -690,7 +690,7 @@ export default function MenuTab() {
                             )}
                           </div>
 
-                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex gap-1 opacity-80">
                             <button
                               onClick={() => startEditItem(item)}
                               className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
