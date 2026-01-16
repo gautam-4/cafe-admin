@@ -190,25 +190,45 @@ const OrderCard = ({ order, onStatusUpdate }) => {
               </button>
             </>
           )}
-          
+
           {order.status === 'preparing' && (
-            <button
-              onClick={() => handleStatusChange('prepared')}
-              disabled={updating}
-              className="flex-1 bg-green-500 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {updating ? 'Updating...' : 'Mark as Prepared'}
-            </button>
+            <>
+              <button
+                onClick={() => handleStatusChange('prepared')}
+                disabled={updating}
+                className="flex-1 bg-green-500 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {updating ? 'Updating...' : 'Mark as Prepared'}
+              </button>
+              <button
+                onClick={() => handleStatusChange('cancelled')}
+                disabled={updating}
+                className="px-4 py-3 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Cancel
+              </button>
+            </>
+
+
           )}
-          
+
           {order.status === 'prepared' && (
-            <button
-              onClick={() => handleStatusChange('paid')}
-              disabled={updating}
-              className="flex-1 bg-purple-500 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {updating ? 'Processing...' : 'Mark as Paid'}
-            </button>
+            <>
+              <button
+                onClick={() => handleStatusChange('paid')}
+                disabled={updating}
+                className="flex-1 bg-purple-500 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {updating ? 'Processing...' : 'Mark as Paid'}
+              </button>
+              <button
+                onClick={() => handleStatusChange('cancelled')}
+                disabled={updating}
+                className="px-4 py-3 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Cancel
+              </button>
+            </>
           )}
         </div>
       )}
